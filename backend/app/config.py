@@ -1,4 +1,4 @@
-"""Application settings.
+﻿"""Application settings.
 
 Every value comes from environment variables (or a local .env file in development).
 Required secrets have no defaults, so the app refuses to start without them instead
@@ -6,13 +6,18 @@ of silently running with an insecure fallback.
 """
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# The backend folder. .env and the default SQLite file live here, so the app finds them
+# no matter which folder it is started from.
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(env_file=BACKEND_DIR / ".env", env_file_encoding="utf-8", extra="ignore")
 
     # --- Environment ---
     environment: str = Field(default="development", pattern="^(development|test|production)$")
@@ -34,7 +39,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24
 
     # --- Database ---
-    database_url: str = "sqlite:///./fitcoach.db"
+    database_url: str = f"sqlite:///{(BACKEND_DIR / 'fitcoach.db').as_posix()}"
 
     # --- HTTP ---
     cors_origins: list[str] = ["http://localhost:5173"]
